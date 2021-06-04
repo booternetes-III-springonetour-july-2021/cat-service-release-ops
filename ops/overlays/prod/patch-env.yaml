@@ -1,0 +1,12 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cat-service
+spec:
+  template:
+    spec:
+      containers:
+        - name: cat-service
+          env:
+          - name: environment
+            value: production
