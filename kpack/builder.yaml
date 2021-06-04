@@ -1,0 +1,37 @@
+apiVersion: kpack.io/v1alpha1
+kind: ClusterStack
+metadata:
+  name: paketo-stack
+spec:
+  id: "io.buildpacks.stacks.bionic"
+  buildImage:
+    image: "paketobuildpacks/build:base-cnb"
+  runImage:
+    image: "paketobuildpacks/run:base-cnb"
+---
+apiVersion: kpack.io/v1alpha1
+kind: ClusterStore
+metadata:
+  name: paketo-store
+spec:
+  sources:
+    - image: gcr.io/paketo-buildpacks/builder:base
+---
+apiVersion: kpack.io/v1alpha1
+kind: Builder
+metadata:
+  name: paketo-builder
+spec:
+  tag: gcr.io/pgtm-jlong/paketo-builder
+  serviceAccount: kpack-bot
+  stack:
+    name: paketo-stack
+    kind: ClusterStack
+  store:
+    name: paketo-store
+    kind: ClusterStore
+  order:
+    - group:
+        - id: paketo-buildpacks/java
+    - group:
+        - id: paketo-buildpacks/nodejs
