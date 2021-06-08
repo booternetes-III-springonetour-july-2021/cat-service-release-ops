@@ -2,13 +2,13 @@
 
 This repo contains the files and instructions necessary for deploying [cat-service](https://github.com/booternetes-III-springonetour-july-2021/cat-service) to Kubernetes.
 
-### Assumptions
+## Assumptions
 
 The configuration of the Docker registry assumes that you are working on the Booternetes cluster in GCP project `pgtm-jlong`. 
 If you are, you should have access to push container images to `gcr.io/pgtm-jlong`.
 If you want to work with a different registry, replace all instances of "gcr.io/pgtm-jlong" with your registry address.
 
-### Option : Manual Deployment to K8s
+## Option 1: Manual Deployment to K8s
 
 Please refer to [deploy-manually.sh](./deploy-manually.sh).
 The script will automatically build a container image and deploy it to dev and prod namespaces.
@@ -17,7 +17,7 @@ The script will automatically build a container image and deploy it to dev and p
 These sections are commented out. 
 After running the script, you need to copy and paste them manually into the terminal.
 
-### Option 2: Automated Deployment to K8s
+## Option 2: Automated Deployment to K8s
 
 This section will guide you through automating the application build and deployment using kpack and ArgoCD.
 
@@ -122,11 +122,9 @@ Push any change to the `cat-service` app repo.
 For example, you can make a change to `cat-service/bump` simply to create a new git commit.
 After a few seconds, run `kubectl get builds` to validate that kpack has kicked off a new build. Check the container repo to confirm that it has also published a new container.
 
-#### ArgoCD (apply deployments)
+### ArgoCD (apply deployments)
 
 [argocd](https://argoproj.github.io/argo-cd) is a Kubernetes-native deployment server that can deploy your application to Kubernetes anytime the Kubernetes manifests are updated.
-
-[argocd-image-updater](https://github.com/argoproj-labs/argocd-image-updater) works in conjunction with ArgoCD to automate deployments when images on a container registry are updated.
 
 To install ArgoCD, run:
 > Note: check [here](https://github.com/argoproj/argo-cd/releases) for the latest version of ArgoCD.
@@ -218,7 +216,13 @@ You can also refer to this section of the [docs](https://argoproj.github.io/argo
 
 In your second terminal, use Ctrl+C to stop the port-forwarding.
 
-#### Cleanup cluster
+### ArgoCD Image Updater (check for container updates)
+
+[argocd-image-updater](https://github.com/argoproj-labs/argocd-image-updater) works in conjunction with ArgoCD to automate deployments when images on a container registry are updated.
+
+#### TODO: Finish this section...
+
+### Cleanup cluster
 ```shell
 kubectl delete ns kpack
 kubectl delete ns argocd
