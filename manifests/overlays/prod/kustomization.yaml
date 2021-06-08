@@ -12,3 +12,6 @@ patchesStrategicMerge:
 #  - patch-memorylimit.yaml
 commonLabels:
   env: prod
+replicas:
+  - name: cat-service
+    count: 3
