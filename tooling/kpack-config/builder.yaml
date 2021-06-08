@@ -1,7 +1,7 @@
 apiVersion: kpack.io/v1alpha1
 kind: ClusterStack
 metadata:
-  name: paketo-stack
+  name: booternetes-stack
 spec:
   id: "io.buildpacks.stacks.bionic"
   buildImage:
@@ -12,23 +12,27 @@ spec:
 apiVersion: kpack.io/v1alpha1
 kind: ClusterStore
 metadata:
-  name: paketo-store
+  name: booternetes-store
 spec:
   sources:
-    - image: gcr.io/paketo-buildpacks/builder:base
+#    - image: paketobuildpacks/builder:base
+    # Must pin version of Java BP at lifecycle v0.5 until
+    # next release of kpack, which should support lifecycle 0.6
+    - image: paketobuildpacks/builder:0.1.112-base
 ---
 apiVersion: kpack.io/v1alpha1
 kind: Builder
 metadata:
-  name: paketo-builder
+  name: booternetes-builder
+  namespace: kpack
 spec:
-  tag: gcr.io/pgtm-jlong/paketo-builder
+  tag: gcr.io/pgtm-jlong/booternetes-builder
   serviceAccount: kpack-bot
   stack:
-    name: paketo-stack
+    name: booternetes-stack
     kind: ClusterStack
   store:
-    name: paketo-store
+    name: booternetes-store
     kind: ClusterStore
   order:
     - group:

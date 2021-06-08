@@ -8,5 +8,5 @@ spec:
       containers:
         - name: cat-service
           env:
-          - name: environment
-            value: production
+          - name: ENV
+            value: prod

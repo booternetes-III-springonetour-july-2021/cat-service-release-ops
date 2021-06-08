@@ -2,9 +2,10 @@ apiVersion: kpack.io/v1alpha1
 kind: Image
 metadata:
   name: cat-service
+  namespace: kpack
 spec:
   builder:
-    name: paketo-builder
+    name: booternetes-builder
     kind: Builder
   serviceAccount: kpack-bot
   cacheSize: "1.5Gi" # Optional, if not set then the caching feature is disabled
@@ -20,10 +21,3 @@ spec:
         value: "Booternetes cat-service"
       - name: BP_OCI_SOURCE
         value: "https://github.com/booternetes-III-springonetour-july-2021/cat-service"
-    resources:
-      limits:
-        cpu: 100m
-        memory: 1G
-      requests:
-        cpu: 50m
-        memory: 512M
