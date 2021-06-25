@@ -15,10 +15,7 @@ metadata:
   name: booternetes-store
 spec:
   sources:
-#    - image: paketobuildpacks/builder:base
-    # Must pin version of Java BP at lifecycle v0.5 until
-    # next release of kpack, which should support lifecycle 0.6
-    - image: paketobuildpacks/builder:0.1.112-base
+    - image: paketobuildpacks/builder:base
 ---
 apiVersion: kpack.io/v1alpha1
 kind: Builder

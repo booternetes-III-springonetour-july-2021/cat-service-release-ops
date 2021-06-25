@@ -116,6 +116,11 @@ When the build is done you will see all of the lifecycle stages listed in the ou
 Events:  <none>
 ```
 
+If you donload the kpack `logs` CLI as well, you can use the following command to see the log files:
+```shell
+logs -namespace kpack -image cat-service -build 1
+```
+
 #### Test kpack auto-rebuild
 
 Push any change to the `cat-service-release` app repo. 
