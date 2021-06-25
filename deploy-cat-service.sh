@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Clone app
-rm -rf _temp-cat-service
-git clone https://github.com/booternetes-III-springonetour-july-2021/cat-service _temp-cat-service
-cd _temp-cat-service
+rm -rf _temp-cat-service-release
+git clone https://github.com/booternetes-III-springonetour-july-2021/cat-service-release _temp-cat-service-release
+cd _temp-cat-service-release
 
 # Build an publish image
 ./mvnw spring-boot:build-image \

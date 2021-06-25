@@ -1,6 +1,6 @@
-# cat-service-ops
+# cat-service-release-ops
 
-This repo contains the files and instructions necessary for deploying [cat-service](https://github.com/booternetes-III-springonetour-july-2021/cat-service) to Kubernetes.
+This repo contains the files and instructions necessary for deploying [cat-service-release](https://github.com/booternetes-III-springonetour-july-2021/cat-service-release) to Kubernetes.
 
 ## Assumptions
 
@@ -86,7 +86,7 @@ Once the image is created, you can validate that it has been published by checki
 skopeo list-tags docker://gcr.io/pgtm-jlong/booternetes-builder
 ```
 
-Now that you have a Builder image and have granted kpack rights to the Docker registry, you can automate builds for the `cat-service` application.
+Now that you have a Builder image and have granted kpack rights to the Docker registry, you can automate builds for the `cat-service-release` repo.
 Apply the kpack image YAML file included in this repo.
 This will trigger kpack to build an image from the app repo.
 ``` 
@@ -118,8 +118,8 @@ Events:  <none>
 
 #### Test kpack auto-rebuild
 
-Push any change to the `cat-service` app repo. 
-For example, you can make a change to `cat-service/bump` simply to create a new git commit.
+Push any change to the `cat-service-release` app repo. 
+For example, you can make a change to the `bump` file to force a new git commit id.
 After a few seconds, run `kubectl get builds` to validate that kpack has kicked off a new build. Check the container repo to confirm that it has also published a new container.
 
 ### ArgoCD (apply deployments)
@@ -141,11 +141,11 @@ kubectl get pods -n argocd
 
 ArgoCD uses a CRD called an "Application" to manage deployments to Kubernetes.
 The Application checks for updates to Kubernetes manifests and applies them when changes are detected.
-Hence, you need to configure an Application to poll for changes to the `cat-service-ops` repo, which contains the yaml manifests for `cat-service`.
-Notice that the files in `cat-service-ops/manifests` use kustomize to define two overlays: dev and prod.
+Hence, you need to configure an Application to poll for changes to the `cat-service-release-ops` repo, which contains the yaml manifests for `cat-service-release`.
+Notice that the files in `cat-service-release-ops/manifests` use kustomize to define two overlays: dev and prod.
 Accordingly, you will create an ArgoCD Application for dev and another for prod.
 
-Before proceeding, the layout of the files in `cat-service-ops/manifests` requires disabling the kustomize load restrictor.
+Before proceeding, the layout of the files in `cat-service-release-ops/manifests` requires disabling the kustomize load restrictor.
 To do this with ArgoCD, run the following command.
 ```shell
 yq eval '.data."kustomize.buildOptions" = "--load_restrictor LoadRestrictionsNone"' <(kubectl get cm argocd-cm -o yaml -n argocd) | kubectl apply -f -
@@ -162,7 +162,7 @@ kubectl apply -f deploy/argocd-app-dev.yaml
 kubectl apply -f deploy/argocd-app-prod.yaml
 ```
 
-You should see dev and prod namespaces created, and in each, the corresponding dev and prod deployments of all the resources declared in `cat-service-ops/manifests/overlays/dev` and `cat-service-ops/manifests/overlays/prod.`
+You should see dev and prod namespaces created, and in each, the corresponding dev and prod deployments of all the resources declared in `cat-service-release-ops/manifests/overlays/dev` and `cat-service-release-ops/manifests/overlays/prod.`
 
 #### Test argocd redeployment ("sync")
 
@@ -171,7 +171,7 @@ Check the number of app pods that are running in the prod namespace.
 kubectl get pods --selector app=cat-service -n prod
 ```
 
-Edit `cat-service-ops/manifests/overlays/prod/kustomization.yaml` and change the number of replicas (`count` field). 
+Edit `cat-service-release-ops/manifests/overlays/prod/kustomization.yaml` and change the number of replicas (`count` field). 
 For example, if it is set to 1, change it to 3, or vice versa.
 Push the change to GitHub.
 

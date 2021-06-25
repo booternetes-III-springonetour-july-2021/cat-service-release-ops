@@ -10,7 +10,7 @@ spec:
   project: default
   source:
     path: manifests/overlays/dev
-    repoURL: https://github.com/booternetes-III-springonetour-july-2021/cat-service-ops.git
+    repoURL: https://github.com/booternetes-III-springonetour-july-2021/cat-service-release-ops.git
     targetRevision: HEAD
   syncPolicy:
     automated: {}
