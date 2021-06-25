@@ -1,14 +1,23 @@
-# Clone app and build image
-rm -rf temp-cat-service
-git clone https://github.com/booternetes-III-springonetour-july-2021/cat-service temp-cat-service
-cd temp-cat-service
+#!/bin/bash
+
+# Clone app
+rm -rf _temp-cat-service
+git clone https://github.com/booternetes-III-springonetour-july-2021/cat-service _temp-cat-service
+cd _temp-cat-service
+
+# Build an publish image
 ./mvnw spring-boot:build-image \
         -DskipTests \
         -Dspring-boot.build-image.imageName=gcr.io/pgtm-jlong/cat-service:0.0.1-SNAPSHOT
 docker push gcr.io/pgtm-jlong/cat-service:0.0.1-SNAPSHOT
+docker tag gcr.io/pgtm-jlong/cat-service:0.0.1-SNAPSHOT gcr.io/pgtm-jlong/cat-service:latest
+docker push gcr.io/pgtm-jlong/cat-service:latest
+
+# Create config manifest
 kubectl create configmap cat-service-config \
         --from-file=src/main/resources/application.properties \
         -o yaml --dry-run=client > ../manifests/base/config/configmap.yaml
+
 cd ..
 
 # Deploy to Kubernetes (dev namespace)
@@ -30,7 +39,9 @@ kustomize build --load-restrictor LoadRestrictionsNone manifests/overlays/prod/ 
 #http :8081/actuator/health
 
 # Cleanup
-kubectl delete ns dev
-kubectl delete ns prod
-docker rmi -f gcr.io/pgtm-jlong/cat-service:0.0.1-SNAPSHOT
+#kustomize build --load-restrictor LoadRestrictionsNone manifests/overlays/dev/ | kubectl delete -f -
+#kubectl delete ns dev
+#kustomize build --load-restrictor LoadRestrictionsNone manifests/overlays/prod/ | kubectl delete -f -
+#kubectl delete ns prod
+#docker rmi -f gcr.io/pgtm-jlong/cat-service:0.0.1-SNAPSHOT
 #skopeo delete docker://gcr.io/pgtm-jlong/cat-service:0.0.1-SNAPSHOT

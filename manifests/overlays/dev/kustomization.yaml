@@ -6,4 +6,4 @@ namespace: dev
 namePrefix: dev-
 images:
   - name: gcr.io/pgtm-jlong/cat-service # used for Kustomize matching
-    newTag: 0.0.1-SNAPSHOT
+    newTag: latest
