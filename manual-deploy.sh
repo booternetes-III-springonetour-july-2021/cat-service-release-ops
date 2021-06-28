@@ -37,11 +37,3 @@ kustomize build --load-restrictor LoadRestrictionsNone manifests/overlays/prod/ 
 #kubectl port-forward service/prod-cat-service 8081:8080 -n prod
 #http :8081/cats/Toby
 #http :8081/actuator/health
-
-# Cleanup
-#kustomize build --load-restrictor LoadRestrictionsNone manifests/overlays/dev/ | kubectl delete -f -
-#kubectl delete ns dev
-#kustomize build --load-restrictor LoadRestrictionsNone manifests/overlays/prod/ | kubectl delete -f -
-#kubectl delete ns prod
-#docker rmi -f gcr.io/pgtm-jlong/cat-service:0.0.1-SNAPSHOT
-#skopeo delete docker://gcr.io/pgtm-jlong/cat-service:0.0.1-SNAPSHOT

@@ -10,12 +10,14 @@ If you want to work with a different registry, replace all instances of "gcr.io/
 
 ## Option 1: Manual Deployment to K8s
 
-Please refer to [deploy-manually.sh](./deploy-manually.sh).
+Please refer to [manual-deploy.sh](./manual-deploy.sh).
 The script will automatically build a container image and deploy it to dev and prod namespaces.
 
-> Note: The script also includes commands to test the dev and prod deployments, and clean up at the end.
+> Note: The script also includes commands to test the dev and prod deployments.
 These sections are commented out. 
 After running the script, you need to copy and paste them manually into the terminal.
+
+To clean up the resources created by the manual deployment, run [manual-deploy-cleanup.sh](./manual-deploy-cleanup.sh).
 
 ## Option 2: Automated Deployment to K8s
 
@@ -116,7 +118,7 @@ When the build is done you will see all of the lifecycle stages listed in the ou
 Events:  <none>
 ```
 
-If you donload the kpack `logs` CLI as well, you can use the following command to see the log files:
+If you download the kpack `logs` CLI as well, you can use the following command to see the log files:
 ```shell
 logs -namespace kpack -image cat-service -build 1
 ```
