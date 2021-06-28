@@ -24,16 +24,24 @@ cd ..
 kubectl create ns dev
 kustomize build --load-restrictor LoadRestrictionsNone manifests/overlays/dev/ | kubectl apply -f -
 
-# Test the dev app
-#kubectl port-forward service/dev-cat-service 8080:8080 -n dev
-#http :8080/cats/Toby
-#http :8080/actuator/health
-
 # Deploy to Kubernetes (prod namespace)
 kubectl create ns prod
 kustomize build --load-restrictor LoadRestrictionsNone manifests/overlays/prod/ | kubectl apply -f -
 
-# Test the prod app
-#kubectl port-forward service/prod-cat-service 8081:8080 -n prod
-#http :8081/cats/Toby
-#http :8081/actuator/health
+# Test the app
+echo -e "\nTesting dev-cat-service"
+kubectl port-forward service/dev-cat-service 8080:8080 -n dev >/dev/null 2>&1 &
+k_pid=$!
+sleep 5
+http :8080/actuator/health
+http :8080/cats/Toby
+kill $k_pid
+sleep 3
+
+echo -e "\nTesting prod-cat-service"
+kubectl port-forward service/prod-cat-service 8080:8080 -n prod >/dev/null 2>&1 &
+k_pid=$!
+sleep 5
+http :8080/actuator/health
+http :8080/cats/Toby
+kill $k_pid

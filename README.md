@@ -228,11 +228,3 @@ In your second terminal, use Ctrl+C to stop the port-forwarding.
 [argocd-image-updater](https://github.com/argoproj-labs/argocd-image-updater) works in conjunction with ArgoCD to automate deployments when images on a container registry are updated.
 
 #### TODO: Finish this section...
-
-### Cleanup cluster
-```shell
-kubectl delete ns kpack
-kubectl delete ns argocd
-kubectl delete ns dev
-kubectl delete ns prod
-```

@@ -24,3 +24,7 @@ kubectl delete -f "$CURRENT_BASE_DL/deploy/argocd-app-prod.yaml"
 # Delete ArgoCD
 kubectl delete -n argocd -f "$CURRENT_BASE_DL/tooling/argocd/install.yaml"
 kubectl delete namespace argocd
+
+# Delete app
+kubectl delete namespace dev
+kubectl delete namespace prod

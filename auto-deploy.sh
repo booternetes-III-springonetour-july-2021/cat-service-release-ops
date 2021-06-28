@@ -13,7 +13,7 @@ DOCKER_REG_CREDS=~/Downloads/pgtm-jlong-6a94c0f57048.json
 #CURRENT_BASE_DL="https://raw.githubusercontent.com/booternetes-III-springonetour-july-2021/cat-service-release-ops/30aeac949ebf0b9876954cd1a15a8365fba264e8"
 
 # Install kpack
-echo "Checking for available updates for kpack"
+echo -e "\nChecking for available updates for kpack"
 CURRENT_FILE="tooling/kpack/release.yaml"
 CURRENT="$CURRENT_BASE_DL/$CURRENT_FILE"
 LATEST=$(curl -s https://api.github.com/repos/pivotal/kpack/releases/latest | jq -r '.assets[].browser_download_url | select(test("release-"))')
@@ -37,13 +37,13 @@ done
 fi
 
 echo "Installing kpack from $CURRENT"
-curl -fsLJ $CURRENT | kubectl apply -f -
+kubectl apply -f $CURRENT
 
 # Create secret for publishing to Docker registry
 if [[ $(kubectl get secret regcred -n kpack --ignore-not-found) ]]; then
-  echo "Secret regcred already exists"
+  echo -e "\nSecret regcred already exists"
 else
-  echo "Creating secret regcred from file $DOCKER_REG_CREDS"
+  echo -e "\nCreating secret regcred from file $DOCKER_REG_CREDS"
   if [ -f $DOCKER_REG_CREDS ]; then
   kubectl create secret docker-registry regcred \
         --docker-server "https://gcr.io" \
@@ -58,14 +58,23 @@ else
 fi
 
 # Apply kpack service account and builder manifests
+echo -e "\nCreating kpack service account and builder"
 kubectl apply -f "$CURRENT_BASE_DL/tooling/kpack-config/service-account.yaml"
 kubectl apply -f "$CURRENT_BASE_DL/tooling/kpack-config/builder.yaml"
 
+# Wait for builder to be ready
+echo -e "\nChecking for booternetes-builder"
+while [[ ! $(kubectl get bldr booternetes-builder -n kpack --ignore-not-found | grep True) ]]; do
+  echo "Waiting for booternetes-builder to be ready..."
+  sleep 3
+done
+
 # Apply kpack image manifest
+echo -e "\nCreating kpack image"
 kubectl apply -f "$CURRENT_BASE_DL/build/kpack-image.yaml"
 
 # Install ArgoCD
-echo "Checking for available updates for argocd"
+echo -e "\nChecking for available updates for argocd"
 CURRENT_FILE="tooling/argocd/install.yaml"
 CURRENT="$CURRENT_BASE_DL/$CURRENT_FILE"
 LATEST_VERSION=$(curl -s https://api.github.com/repos/argoproj/argo-cd/releases/latest | jq -r '.tag_name')
@@ -92,15 +101,54 @@ fi
 
 echo "Installing argocd from $CURRENT"
 kubectl create namespace argocd
-curl -fsLJ $CURRENT | kubectl apply -n argocd -f -
+kubectl apply -n argocd -f $CURRENT
+
+# Get ArgoCD admin password
+# Wait for argocd admin secret to be ready
+echo -e "\nChecking for argocd-initial-admin-secret"
+while [[ ! $(kubectl get secret argocd-initial-admin-secret -n argocd --ignore-not-found) ]]; do
+  echo "Waiting for argocd-initial-admin-secret to be ready..."
+  sleep 3
+done
+ARGOCD_PW=$(kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath="{.data.password}" | base64 -d)
+echo -e "\nArgoCD password is stored in \$ARGOCD_PW\n"
 
 # Set kustomize load restrictor for ArgoCD
 yq eval '.data."kustomize.buildOptions" = "--load_restrictor LoadRestrictionsNone"' <(kubectl get cm argocd-cm -o yaml -n argocd) | kubectl apply -f -
 
 # Create ArgoCD Application resources
+# Wait for app image to be ready
+echo -e "\nChecking for cat-service image in gcr.io"
+while [[ ! $(skopeo list-tags docker://gcr.io/pgtm-jlong/cat-service | grep latest) ]]; do
+  echo "Waiting for docker://gcr.io/pgtm-jlong/cat-service:latest to be ready..."
+  sleep 5
+done
+
+echo -e "\nCreating argocd Application resources"
 kubectl apply -f "$CURRENT_BASE_DL/deploy/argocd-app-dev.yaml"
 kubectl apply -f "$CURRENT_BASE_DL/deploy/argocd-app-prod.yaml"
 
-# Get ArgoCD admin password
-ARGOCD_PW=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-echo "ArgoCD password is stored in \$ARGOCD_PW"
+# Wait for apps to be ready
+echo -e "\nChecking status of cat-service pod in dev and prod namespaces"
+while [[ ! $(kubectl get pods --selector app=cat-service -n dev | grep Running) || ! $(kubectl get pods --selector app=cat-service -n prod | grep Running) ]]; do
+  echo "Waiting for cat-service to be ready..."
+  sleep 5
+done
+
+# Test the app
+echo -e "\nTesting dev-cat-service"
+kubectl port-forward service/dev-cat-service 8080:8080 -n dev >/dev/null 2>&1 &
+k_pid=$!
+sleep 5
+http :8080/actuator/health
+http :8080/cats/Toby
+kill $k_pid
+sleep 3
+
+echo -e "\nTesting prod-cat-service"
+kubectl port-forward service/prod-cat-service 8080:8080 -n prod >/dev/null 2>&1 &
+k_pid=$!
+sleep 5
+http :8080/actuator/health
+http :8080/cats/Toby
+kill $k_pid
