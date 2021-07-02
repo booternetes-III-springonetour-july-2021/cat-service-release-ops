@@ -155,7 +155,6 @@ kill $k_pid
 
 # Install argocd-image-updater
 echo -e "\nInstalling argocd-image-updater"
-https://github.com/argoproj-labs/argocd-image-updater/releases/tag/v0.9.5
 
 # Install argocd-image-updater
 echo -e "\nChecking for available updates for argocd-image-updater"
