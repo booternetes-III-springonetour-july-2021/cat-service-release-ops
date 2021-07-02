@@ -12,6 +12,7 @@ DOCKER_REG_CREDS=~/Downloads/pgtm-jlong-6a94c0f57048.json
 #CURRENT_BASE="https://github.com/booternetes-III-springonetour-july-2021/cat-service-release-ops/blob/30aeac949ebf0b9876954cd1a15a8365fba264e8"
 #CURRENT_BASE_DL="https://raw.githubusercontent.com/booternetes-III-springonetour-july-2021/cat-service-release-ops/30aeac949ebf0b9876954cd1a15a8365fba264e8"
 
+############################################################
 # Install kpack
 echo -e "\nChecking for available updates for kpack"
 CURRENT_FILE="tooling/kpack/release.yaml"
@@ -73,6 +74,7 @@ done
 echo -e "\nCreating kpack image"
 kubectl apply -f "$CURRENT_BASE_DL/build/kpack-image.yaml"
 
+############################################################
 # Install ArgoCD
 echo -e "\nChecking for available updates for argocd"
 CURRENT_FILE="tooling/argocd/install.yaml"
@@ -116,43 +118,7 @@ echo -e "\nArgoCD password is stored in \$ARGOCD_PW\n"
 # Set kustomize load restrictor for ArgoCD
 yq eval '.data."kustomize.buildOptions" = "--load_restrictor LoadRestrictionsNone"' <(kubectl get cm argocd-cm -o yaml -n argocd) | kubectl apply -f -
 
-# Create ArgoCD Application resources
-# Wait for app image to be ready
-echo -e "\nChecking for cat-service image in gcr.io"
-while [[ ! $(skopeo list-tags docker://gcr.io/pgtm-jlong/cat-service | grep latest) ]]; do
-  echo "Waiting for docker://gcr.io/pgtm-jlong/cat-service:latest to be ready..."
-  sleep 5
-done
-
-echo -e "\nCreating argocd Application resources"
-kubectl apply -f "$CURRENT_BASE_DL/deploy/argocd-app-dev.yaml"
-kubectl apply -f "$CURRENT_BASE_DL/deploy/argocd-app-prod.yaml"
-
-# Wait for apps to be ready
-echo -e "\nChecking status of cat-service pod in dev and prod namespaces"
-while [[ ! $(kubectl get pods --selector app=cat-service -n dev | grep Running) || ! $(kubectl get pods --selector app=cat-service -n prod | grep Running) ]]; do
-  echo "Waiting for cat-service to be ready..."
-  sleep 5
-done
-
-# Test the app
-echo -e "\nTesting dev-cat-service"
-kubectl port-forward service/dev-cat-service 8080:8080 -n dev >/dev/null 2>&1 &
-k_pid=$!
-sleep 5
-http :8080/actuator/health
-http :8080/cats/Toby
-kill $k_pid
-sleep 3
-
-echo -e "\nTesting prod-cat-service"
-kubectl port-forward service/prod-cat-service 8080:8080 -n prod >/dev/null 2>&1 &
-k_pid=$!
-sleep 5
-http :8080/actuator/health
-http :8080/cats/Toby
-kill $k_pid
-
+############################################################
 # Install argocd-image-updater
 echo -e "\nInstalling argocd-image-updater"
 
@@ -236,3 +202,41 @@ else
       --from-literal=password=$GIT_ACCESS_TOKEN \
       -n argocd
 fi
+
+############################################################
+# Create ArgoCD Application resources
+# Wait for app image to be ready
+echo -e "\nChecking for cat-service image in gcr.io"
+while [[ ! $(skopeo list-tags docker://gcr.io/pgtm-jlong/cat-service | grep latest) ]]; do
+  echo "Waiting for docker://gcr.io/pgtm-jlong/cat-service:latest to be ready..."
+  sleep 5
+done
+
+echo -e "\nCreating argocd Application resources"
+kubectl apply -f "$CURRENT_BASE_DL/deploy/argocd-app-dev.yaml"
+kubectl apply -f "$CURRENT_BASE_DL/deploy/argocd-app-prod.yaml"
+
+# Wait for apps to be ready
+echo -e "\nChecking status of cat-service pod in dev and prod namespaces"
+while [[ ! $(kubectl get pods --selector app=cat-service -n dev | grep Running | grep "1/1") || ! $(kubectl get pods --selector app=cat-service -n prod | grep Running | grep "1/1") ]]; do
+  echo "Waiting for cat-service to be ready..."
+  sleep 5
+done
+
+# Test the app
+echo -e "\nTesting dev-cat-service"
+kubectl port-forward service/dev-cat-service 8080:8080 -n dev >/dev/null 2>&1 &
+k_pid=$!
+sleep 5
+http :8080/actuator/health
+http :8080/cats/Toby
+kill $k_pid
+sleep 3
+
+echo -e "\nTesting prod-cat-service"
+kubectl port-forward service/prod-cat-service 8080:8080 -n prod >/dev/null 2>&1 &
+k_pid=$!
+sleep 5
+http :8080/actuator/health
+http :8080/cats/Toby
+kill $k_pid
