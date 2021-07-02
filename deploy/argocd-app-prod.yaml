@@ -1,6 +1,9 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: gcr.io/pgtm-jlong/cat-service
+    argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/gitcred
   name: prod-cat-service
   namespace: argocd
 spec:
@@ -11,7 +14,7 @@ spec:
   source:
     path: manifests/overlays/prod
     repoURL: https://github.com/booternetes-III-springonetour-july-2021/cat-service-release-ops.git
-    targetRevision: HEAD
+    targetRevision: main
   syncPolicy:
     automated: {}
     syncOptions:

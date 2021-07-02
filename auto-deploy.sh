@@ -152,3 +152,88 @@ sleep 5
 http :8080/actuator/health
 http :8080/cats/Toby
 kill $k_pid
+
+# Install argocd-image-updater
+echo -e "\nInstalling argocd-image-updater"
+https://github.com/argoproj-labs/argocd-image-updater/releases/tag/v0.9.5
+
+# Install argocd-image-updater
+echo -e "\nChecking for available updates for argocd-image-updater"
+CURRENT_FILE="tooling/argocd-image-updater/install.yaml"
+CURRENT="$CURRENT_BASE_DL/$CURRENT_FILE"
+LATEST_VERSION=$(curl -s https://api.github.com/repos/argoproj-labs/argocd-image-updater/releases/latest | jq -r '.tag_name')
+LATEST="https://raw.githubusercontent.com/argoproj-labs/argocd-image-updater/$LATEST_VERSION/manifests/install.yaml"
+
+DIFF=$(diff <(curl -fsLJ $CURRENT | grep "image: argoprojlabs/argocd-image-updater:" | tail -1) <(curl -fsLJ $LATEST | grep "image: argoprojlabs/argocd-image-updater:" | tail -1))
+
+if [ "$DIFF" != "" ]
+then
+    printf "${RED}A new version of argocd-image-updater is available.\n${NC}"
+    printf "${RED}$DIFF\n${NC}"
+    printf "${RED}To install the latest version, update the following file and re-run this script.\n${NC}"
+    printf "${RED}     Update: "$CURRENT_BASE/$CURRENT_FILE"\n${NC}"
+    printf "${RED}     With: $LATEST\n\n${NC}"
+    while true; do
+    read -p "Do you wish to continue installing the OLDER version of argocd-image-updater? " yn
+    case $yn in
+        [Yy]* ) break;;
+        [Nn]* ) exit;;
+        * ) printf "${RED}Please answer yes or no.\n${NC}";;
+    esac
+done
+fi
+
+echo "Installing argocd-image-updater from $CURRENT"
+kubectl apply -n argocd -f $CURRENT
+
+kubectl rollout status deploy/argocd-image-updater -n argocd
+
+# Set logging to debug (Default is info. Options are trace, debug, info, warn or error)
+yq eval '.data."log.level" = "debug"' <(kubectl get cm argocd-image-updater-config -o yaml -n argocd) | kubectl apply -f -
+
+# Create user "image-updater" in ArgoCD for argocd-image-updater and generate auth token for the new account to talk to ArgoCD API
+# apiKey capability - allows generating authentication tokens for API access
+yq eval '.data."accounts.image-updater" = "apiKey"' <(kubectl get cm argocd-cm -o yaml -n argocd) | kubectl apply -f -
+argocd --port-forward --port-forward-namespace argocd login --username admin --password $ARGOCD_PW
+IMAGE_UPDATER_ARGOCD_API_TOKEN=$(argocd --port-forward --port-forward-namespace argocd account generate-token --account image-updater --id image-updater)
+###echo $IMAGE_UPDATER_ARGOCD_API_TOKEN
+### LEARN MORE ABOUT ARCD USERS: https://argoproj.github.io/argo-cd/operator-manual/user-management/#create-new-user
+### TO CHECK:
+### kubectl get cm argocd-cm -o yaml -n argocd
+### or:
+### argocd --port-forward --port-forward-namespace argocd account list
+### argocd --port-forward --port-forward-namespace argocd account get --account image-updater
+### TO DELETE:
+### argocd --port-forward --port-forward-namespace argocd account delete-token --account image-updater image-updater
+
+# Create roles for new account
+### SEE https://argo-cd.readthedocs.io/en/stable/operator-manual/rbac/#basic-built-in-roles
+### SEE ALSO: https://github.com/argoproj/argo-cd/blob/master/docs/operator-manual/argocd-rbac-cm.yaml
+
+# Add RBAC permissions to Argo CD's argocd-rbac-cm ConfigMap and Argo CD will pick them up automatically.
+kubectl apply -f "$CURRENT_BASE_DL/tooling/argocd-image-updater-config/argocd-rbac-cm.yaml" -n argocd
+### kubectl get cm argocd-rbac-cm -o yaml -n argocd
+
+# Create secret from token generated above and restart the argocd-image-updater pod
+kubectl create secret generic argocd-image-updater-secret \
+  --from-literal argocd.token=$IMAGE_UPDATER_ARGOCD_API_TOKEN \
+  --dry-run=client -o yaml | kubectl apply -f - -n argocd
+
+kubectl rollout restart deployment argocd-image-updater -n argocd
+
+# Create secret for argocd-image-updater to push to Git repository
+if [[ $(kubectl get secret gitcred -n argocd --ignore-not-found) ]]; then
+  echo -e "\nSecret gitcred already exists"
+else
+  echo -e "\nCreating secret gitcred from \$GIT_ACCESS_TOKEN"
+  if [[ "${GIT_ACCESS_TOKEN}" == "" ]]; then
+    printf "${RED}\nEnv var \$GIT_ACCESS_TOKEN is not set.\n\n${NC}"
+    echo -n "Enter your GitHub access token: " && read -s GIT_ACCESS_TOKEN || { stty -echo; read GIT_ACCESS_TOKEN; stty echo; }
+    export GIT_ACCESS_TOKEN
+    echo
+  fi
+  kubectl create secret generic gitcred \
+      --from-literal=username="" \
+      --from-literal=password=$GIT_ACCESS_TOKEN \
+      -n argocd
+fi
