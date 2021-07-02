@@ -4,8 +4,8 @@ CURRENT_BASE_DL="https://raw.githubusercontent.com/booternetes-III-springonetour
 
 # Uninstall argocd-image-updater
 echo "Uninstalling argocd-image-updater"
-kubectl create secret generic gitcred -n argocd
-kubectl delete secret generic argocd-image-updater-secret -n argocd
+kubectl delete secret gitcred -n argocd
+kubectl delete secret argocd-image-updater-secret -n argocd
 #argocd --port-forward --port-forward-namespace argocd account delete-token --account image-updater image-updater
 kubectl delete -n argocd -f "$CURRENT_BASE_DL/tooling/argocd-image-updater-config/argocd-rbac-cm.yaml"
 kubectl delete -n argocd -f "$CURRENT_BASE_DL/tooling/argocd-image-updater/install.yaml"
