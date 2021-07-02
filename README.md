@@ -218,6 +218,14 @@ As an example, you can list the Applications currently defined, including status
 argocd app list
 ```
 
+> Note:
+> You can also embed port-forwarding in each command, as follows:
+```shell
+argocd --port-forward --port-forward-namespace argocd login --username admin --password $ARGOCD_PW
+
+argocd --port-forward --port-forward-namespace argocd app list
+```
+
 See the documentation or use `argocd --help` to explore the CLI further.
 You can also refer to this section of the [docs](https://argoproj.github.io/argo-cd/getting_started/#6-create-an-application-from-a-git-repository) to see how you could define the same two Applications using either the UI or the CLI.
 
