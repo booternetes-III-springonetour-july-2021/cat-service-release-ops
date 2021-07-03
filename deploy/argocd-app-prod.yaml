@@ -16,6 +16,8 @@ spec:
     repoURL: https://github.com/booternetes-III-springonetour-july-2021/cat-service-release-ops.git
     targetRevision: main
   syncPolicy:
-    automated: {}
     syncOptions:
       - CreateNamespace=true
+    #    automated: {}
+    automated:
+      prune: true
