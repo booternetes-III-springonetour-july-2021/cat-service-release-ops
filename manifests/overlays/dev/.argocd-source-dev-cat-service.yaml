@@ -1,0 +1,3 @@
+kustomize:
+  images:
+  - gcr.io/pgtm-jlong/cat-service:b3.20210703.035806
