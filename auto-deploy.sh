@@ -8,6 +8,8 @@ NC='\033[0m' # No Color
 CURRENT_BASE="https://github.com/booternetes-III-springonetour-july-2021/cat-service-release-ops/blob/main"
 CURRENT_BASE_DL="https://raw.githubusercontent.com/booternetes-III-springonetour-july-2021/cat-service-release-ops/main"
 DOCKER_REG_CREDS=~/Downloads/pgtm-jlong-6a94c0f57048.json
+#GIT_USER=ciberkleid
+#GIT_ACCESS_TOKEN=
 
 #CURRENT_BASE="https://github.com/booternetes-III-springonetour-july-2021/cat-service-release-ops/blob/30aeac949ebf0b9876954cd1a15a8365fba264e8"
 #CURRENT_BASE_DL="https://raw.githubusercontent.com/booternetes-III-springonetour-july-2021/cat-service-release-ops/30aeac949ebf0b9876954cd1a15a8365fba264e8"
@@ -190,15 +192,18 @@ kubectl rollout restart deployment argocd-image-updater -n argocd
 if [[ $(kubectl get secret gitcred -n argocd --ignore-not-found) ]]; then
   echo -e "\nSecret gitcred already exists"
 else
-  echo -e "\nCreating secret gitcred from \$GIT_ACCESS_TOKEN"
-  if [[ "${GIT_ACCESS_TOKEN}" == "" ]]; then
-    printf "${RED}\nEnv var \$GIT_ACCESS_TOKEN is not set.\n\n${NC}"
+  echo -e "\nCreating secret gitcred from \$GIT_USER and \$GIT_ACCESS_TOKEN"
+  if [[ "${GIT_USER}" == "" || "${GIT_ACCESS_TOKEN}" == "" ]]; then
+    printf "${RED}\nEnv var \$GIT_USER and/or \$GIT_ACCESS_TOKEN is not set.\n\n${NC}"
+    echo -n "Enter your GitHub user: " && read -s GIT_USER || { stty -echo; read GIT_USER; stty echo; }
+    export GIT_USER
+    echo
     echo -n "Enter your GitHub access token: " && read -s GIT_ACCESS_TOKEN || { stty -echo; read GIT_ACCESS_TOKEN; stty echo; }
     export GIT_ACCESS_TOKEN
     echo
   fi
   kubectl create secret generic gitcred \
-      --from-literal=username="" \
+      --from-literal=username=$GIT_USER \
       --from-literal=password=$GIT_ACCESS_TOKEN \
       -n argocd
 fi
