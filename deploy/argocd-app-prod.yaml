@@ -2,7 +2,10 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   annotations:
-    argocd-image-updater.argoproj.io/image-list: gcr.io/pgtm-jlong/cat-service
+    argocd-image-updater.argoproj.io/image-list: cat-service-image=gcr.io/pgtm-jlong/cat-service
+    argocd-image-updater.argoproj.io/cat-service-image.update-strategy: latest
+    argocd-image-updater.argoproj.io/cat-service-image.allow-tags: regexp:^b\d*\.\d{8}\.\d{6}$
+#    argocd-image-updater.argoproj.io/cat-service-image.ignore-tags: *
     argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/gitcred
   name: prod-cat-service
   namespace: argocd
