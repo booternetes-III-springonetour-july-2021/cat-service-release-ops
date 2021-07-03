@@ -226,17 +226,23 @@ done
 # Test the app
 echo -e "\nTesting dev-cat-service"
 kubectl port-forward service/dev-cat-service 8080:8080 -n dev >/dev/null 2>&1 &
-k_pid=$!
+pid_dev=$!
 sleep 5
 http :8080/actuator/health
 http :8080/cats/Toby
-kill $k_pid
+kill $pid_dev
 sleep 3
 
 echo -e "\nTesting prod-cat-service"
-kubectl port-forward service/prod-cat-service 8080:8080 -n prod >/dev/null 2>&1 &
-k_pid=$!
+kubectl port-forward service/prod-cat-service 8081:8080 -n prod >/dev/null 2>&1 &
+pid_prod=$!
 sleep 5
-http :8080/actuator/health
-http :8080/cats/Toby
-kill $k_pid
+http :8081/actuator/health
+http :8081/cats/Toby
+kill $pid_prod
+
+#kill $pid_dev; sleep 3; kubectl port-forward service/dev-cat-service 8080:8080 -n dev >/dev/null 2>&1 &
+#pid_dev=$!
+#kill $pid_prod; sleep 3; kubectl port-forward service/prod-cat-service 8081:8080 -n prod >/dev/null 2>&1 &
+#pid_prod=$!
+#sleep 5
