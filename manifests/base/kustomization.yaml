@@ -4,7 +4,3 @@ kind: Kustomization
 bases:
   - ./db/
   - ./app/
-
-images:
-  - name: gcr.io/pgtm-jlong/cat-service # used for Kustomize matching
-    newTag: latest

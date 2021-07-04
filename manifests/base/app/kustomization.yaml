@@ -9,3 +9,7 @@ configMapGenerator:
   - name: cat-service-config
     files:
       - application.properties
+
+images:
+  - name: gcr.io/pgtm-jlong/cat-service # used for Kustomize matching
+    newTag: latest
