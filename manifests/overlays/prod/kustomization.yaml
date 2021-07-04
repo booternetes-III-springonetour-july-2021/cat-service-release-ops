@@ -13,4 +13,4 @@ commonLabels:
   env: prod
 replicas:
   - name: cat-service
-    count: 2
+    count: 1
