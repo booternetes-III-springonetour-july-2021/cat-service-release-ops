@@ -1,23 +1,4 @@
 apiVersion: kpack.io/v1alpha1
-kind: ClusterStack
-metadata:
-  name: booternetes-stack
-spec:
-  id: "io.buildpacks.stacks.bionic"
-  buildImage:
-    image: "paketobuildpacks/build:base-cnb"
-  runImage:
-    image: "paketobuildpacks/run:base-cnb"
----
-apiVersion: kpack.io/v1alpha1
-kind: ClusterStore
-metadata:
-  name: booternetes-store
-spec:
-  sources:
-    - image: paketobuildpacks/builder:base
----
-apiVersion: kpack.io/v1alpha1
 kind: Builder
 metadata:
   name: booternetes-builder
