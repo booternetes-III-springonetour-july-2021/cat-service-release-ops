@@ -14,15 +14,15 @@ spec:
         app: cat-postgres
     spec:
       containers:
-        - image: "postgres:latest"
+        - image: "bitnami/postgresql:latest"
           imagePullPolicy: IfNotPresent
           name: cat-postgres
           env:
-            - name: POSTGRES_USER
+            - name: POSTGRESQL_USERNAME
               value: bk
-            - name: PGUSER
+            - name: POSTGRESQL_DATABASE
               value: bk
-            - name: POSTGRES_PASSWORD
+            - name: POSTGRESQL_PASSWORD
               value: bk
           ports:
             - containerPort: 5432
