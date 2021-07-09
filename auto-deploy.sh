@@ -63,6 +63,8 @@ fi
 # Apply kpack service account and builder manifests
 echo -e "\nCreating kpack service account and builder"
 kubectl apply -f "$CURRENT_BASE_DL/tooling/kpack-config/service-account.yaml"
+kubectl apply -f "$CURRENT_BASE_DL/tooling/kpack-config/stack.yaml"
+kubectl apply -f "$CURRENT_BASE_DL/tooling/kpack-config/store.yaml"
 kubectl apply -f "$CURRENT_BASE_DL/tooling/kpack-config/builder.yaml"
 
 # Wait for builder to be ready
