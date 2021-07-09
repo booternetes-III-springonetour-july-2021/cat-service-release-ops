@@ -4,4 +4,5 @@ metadata:
   name: booternetes-store
 spec:
   sources:
-    - image: paketobuildpacks/builder:base
+    - image: gcr.io/paketo-buildpacks/java
+    - image: gcr.io/paketo-buildpacks/nodejs
