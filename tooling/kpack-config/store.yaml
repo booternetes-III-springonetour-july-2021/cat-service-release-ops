@@ -1,7 +1,0 @@
-apiVersion: kpack.io/v1alpha1
-kind: ClusterStore
-metadata:
-  name: booternetes-store
-spec:
-  sources:
-    - image: paketobuildpacks/builder:base
