@@ -4,5 +4,7 @@ kind: Kustomization
 resources:
   - ../../base/
 
-namespace: dev
 namePrefix: dev-
+replicas:
+  - name: cat-service
+    count: 1
