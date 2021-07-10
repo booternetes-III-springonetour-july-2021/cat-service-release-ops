@@ -11,5 +11,5 @@ configMapGenerator:
       - application.properties
 
 images:
-  - name: gcr.io/pgtm-jlong/cat-service # used for Kustomize matching
+  - name: ${REGISTRY_HOST}/cat-service # used for Kustomize matching
     newTag: latest
