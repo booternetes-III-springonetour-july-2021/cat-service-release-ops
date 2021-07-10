@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - ../../base/
 
+namespace: prod
 namePrefix: prod-
 
 patchesStrategicMerge:
