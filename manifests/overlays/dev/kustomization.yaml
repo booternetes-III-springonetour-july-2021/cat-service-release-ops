@@ -6,3 +6,7 @@ resources:
 
 namespace: dev
 namePrefix: dev-
+
+replicas:
+  - name: cat-service
+    count: 2
