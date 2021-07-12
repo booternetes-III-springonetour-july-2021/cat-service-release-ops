@@ -13,8 +13,3 @@ configMapGenerator:
 images:
   - name: gcr.io/pgtm-jlong/cat-service # used for Kustomize matching
     newTag: latest
-    
-configMapGenerator:
-  - name: catty-config
-    literals:
-      - KITTY=cat
