@@ -9,5 +9,4 @@ namePrefix: dev-
 
 replicas:
   - name: cat-service
-    count: 2
-
+    count: 1

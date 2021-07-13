@@ -13,4 +13,9 @@ commonLabels:
   env: prod
 replicas:
   - name: cat-service
-    count: 2
+    count: 1
+
+configMapGenerator:
+  - name: catty-config
+    literals:
+      - KITTY=cat
